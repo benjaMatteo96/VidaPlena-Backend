@@ -39,3 +39,13 @@ class OrderItem(models.Model):
 
     def __str__(self):
         return f'{self.product.name} ({self.quantity})'
+    
+class UserType(models.Model):
+    user_type=models.CharField(max_length=10, unique=True)
+
+    def __str__(self):
+        return self.user_type
+    
+class UserProfile(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    user_type = models.ForeignKey(UserType, on_delete=models.RESTRICT, null=True, blank= True)

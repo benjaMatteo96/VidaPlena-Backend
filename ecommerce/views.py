@@ -1,9 +1,11 @@
-from rest_framework import viewsets
+from rest_framework import viewsets, generics
 from .models import Category, Product, Order, OrderItem
-from .serializers import CategorySerializer, ProductSerializer, OrderSerializer, OrderItemSerializer
+from .serializers import CategorySerializer, ProductSerializer, OrderSerializer, OrderItemSerializer, RegisterSerializer, UserSerializer, CustomTokenObtainPairSerializer
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework.authtoken.models import Token
+from rest_framework_simplejwt.views import TokenObtainPairView
+from rest_framework.response import Response
+from rest_framework.permissions import IsAuthenticated
 from django.contrib.auth.models import User
 from rest_framework.permissions import AllowAny
 
@@ -23,24 +25,17 @@ class OrderItemViewSet(viewsets.ModelViewSet):
     queryset = OrderItem.objects.all()
     serializer_class = OrderItemSerializer
 
-class RegisterView(APIView):
+class CustomTokenObtainPairView(TokenObtainPairView):
+    serializer_class = CustomTokenObtainPairSerializer
+
+class RegisterView(generics.CreateAPIView):
+    queryset = User.objects.all()
+    serializer_class = RegisterSerializer
     permission_classes = [AllowAny]
 
-    def post(self, request):
-        username = request.data.get('username')
-        password = request.data.get('password')
-        user = User.objects.create_user(username=username, password=password)
-        token, created = Token.objects.get_or_create(user=user)
-        return Response({'token': token.key})
+class UserDetailView(APIView):
+    permission_classes = [IsAuthenticated]
 
-class LoginView(APIView):
-    permission_classes = [AllowAny]
-
-    def post(self, request):
-        username = request.data.get('username')
-        password = request.data.get('password')
-        user = User.objects.get(username=username)
-        if user.check_password(password):
-            token, created = Token.objects.get_or_create(user=user)
-            return Response({'token': token.key})
-        return Response({'error': 'Invalid credentials'}, status=400)
+    def get(self, request):
+        serializer = UserSerializer(request.user)
+        return Response(serializer.data)
