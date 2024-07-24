@@ -62,7 +62,7 @@ class RegisterSerializer(serializers.ModelSerializer):
         user_type_str = validated_data.pop('user_type')
         user = User.objects.create(
             username=validated_data['username'],
-            email=validated_data['email']
+            email=validated_data['email'],
         )
         user.set_password(validated_data['password'])
         user.save()
